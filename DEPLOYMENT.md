@@ -10,7 +10,7 @@
 
 | Mục | Nội dung |
 |-----|----------|
-| Họ và tên | Nguyen Xuan Quang |
+| Họ và tên | Nguyễn Xuân Quang |
 | Mã học viên | 2A202601776 |
 | Repo | https://github.com/Mrgintamago/K4-DAY12-2A202601776-NguyenXuanQuang |
 
