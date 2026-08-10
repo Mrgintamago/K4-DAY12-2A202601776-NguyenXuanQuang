@@ -47,6 +47,14 @@ Ghi lại thay đổi theo checkpoint để review trước khi commit. Không g
 - Smoke test: `/healthz` 200, `/readyz` 200, `/chat` không token 401, có token 200; burst 15 request cho 5 lần 429 cuối.
 - Xác minh: `tests/test_cp5.py` có 9 passed, 4 skipped (fallback không áp dụng).
 
+### Bonus — CI/CD GitHub Actions
+
+- Thêm `.github/workflows/ci.yml` chạy khi push và pull request vào `main`.
+- Job `test` cài `requirements.txt` và loại test cần deployment thật; job `build` kiểm tra Docker image.
+- Job `deploy` chỉ chạy sau `test` và `build`, chỉ ở push `main`, rồi smoke test `/healthz`.
+- Thêm CI badge vào `README.md`; cần khai báo `RAILWAY_TOKEN` (Secret), `RAILWAY_PROJECT_ID` và `PUBLIC_URL` (Variables) trên GitHub.
+- Xác minh local: 11/11 kiểm tra cấu trúc bonus pass; badge cần workflow chạy thật trên GitHub.
+
 ### CP1 — Config, Health & Logging
 
 **Trạng thái:** Hoàn tất — đã xác minh bằng checkpoint.
