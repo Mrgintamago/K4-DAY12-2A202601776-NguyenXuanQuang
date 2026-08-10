@@ -58,7 +58,13 @@ jobs:
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
       - name: Smoke test
         run: |
-          sleep 45
-          curl --fail --silent --show-error "$PUBLIC_URL/healthz"
+          for attempt in {1..12}; do
+            if curl --fail --silent --show-error "$PUBLIC_URL/healthz"; then
+              exit 0
+            fi
+            echo "healthz chưa sẵn sàng (lần $attempt/12), đợi 10 giây..."
+            sleep 10
+          done
+          exit 1
         env:
-          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+          PUBLIC_URL: ${{ vars.PUBLIC_URL || 'https://chat-production-43e3.up.railway.app' }}
