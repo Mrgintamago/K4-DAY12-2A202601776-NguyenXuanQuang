@@ -25,27 +25,33 @@ if ([string]::IsNullOrWhiteSpace($env:API_TOKEN)) {
     throw "API_TOKEN trong .env đang rỗng"
 }
 
-function Get-StatusCode {
-    param([string]$Uri)
-    try {
-        return [int](Invoke-WebRequest -Uri $Uri -Method Get -UseBasicParsing -TimeoutSec 60).StatusCode
-    } catch {
-        return [int]$_.Exception.Response.StatusCode.value__
-    }
-}
-
-function Post-StatusCode {
+function Invoke-FullRequest {
     param(
         [string]$Uri,
+        [ValidateSet("Get", "Post")][string]$Method,
         [byte[]]$Body,
-        [hashtable]$Headers
+        [hashtable]$Headers = @{}
     )
     try {
-        return [int](Invoke-WebRequest -Uri $Uri -Method Post -Headers $Headers `
+        $response = Invoke-WebRequest -Uri $Uri -Method $Method -Headers $Headers `
             -ContentType "application/json; charset=utf-8" -Body $Body `
-            -UseBasicParsing -TimeoutSec 60).StatusCode
+            -UseBasicParsing -TimeoutSec 60
+        return [pscustomobject]@{
+            StatusCode = [int]$response.StatusCode
+            Body = $response.Content
+        }
     } catch {
-        return [int]$_.Exception.Response.StatusCode.value__
+        $errorResponse = $_.Exception.Response
+        $errorBody = ""
+        if ($errorResponse) {
+            $reader = New-Object System.IO.StreamReader($errorResponse.GetResponseStream())
+            $errorBody = $reader.ReadToEnd()
+            $reader.Close()
+        }
+        return [pscustomobject]@{
+            StatusCode = if ($errorResponse) { [int]$errorResponse.StatusCode.value__ } else { 0 }
+            Body = $errorBody
+        }
     }
 }
 
@@ -56,17 +62,34 @@ $headers = @{
 $authBody = [Text.Encoding]::UTF8.GetBytes((@{ message = "Deploy là gì?" } | ConvertTo-Json -Compress))
 $rateBody = [Text.Encoding]::UTF8.GetBytes((@{ message = "rate" } | ConvertTo-Json -Compress))
 
-$healthz = Get-StatusCode "$BaseUrl/healthz"
-$readyz = Get-StatusCode "$BaseUrl/readyz"
-$withoutToken = Post-StatusCode "$BaseUrl/chat" `
+$healthz = Invoke-FullRequest "$BaseUrl/healthz" Get
+$readyz = Invoke-FullRequest "$BaseUrl/readyz" Get
+$withoutToken = Invoke-FullRequest "$BaseUrl/chat" Post `
     ([Text.Encoding]::UTF8.GetBytes('{"message":"Hello"}')) @{}
-$withToken = Post-StatusCode "$BaseUrl/chat" $authBody $headers
+$withToken = Invoke-FullRequest "$BaseUrl/chat" Post $authBody $headers
 $burst = 1..15 | ForEach-Object {
-    Post-StatusCode "$BaseUrl/chat" $rateBody $headers
+    [pscustomobject]@{
+        Attempt = $_
+        Result = Invoke-FullRequest "$BaseUrl/chat" Post $rateBody $headers
+    }
 }
 
-Write-Output "healthz: $healthz"
-Write-Output "readyz: $readyz"
-Write-Output "chat without token: $withoutToken"
-Write-Output "chat with token: $withToken"
-Write-Output "rate limit (15 requests): $($burst -join ' ')"
+Write-Output "=== Railway CP5 smoke test ==="
+Write-Output "Base URL: $BaseUrl"
+Write-Output "API token length: $($env:API_TOKEN.Length) (value hidden)"
+Write-Output "`n--- GET /healthz ---"
+Write-Output "Status: $($healthz.StatusCode)"
+Write-Output "Body: $($healthz.Body)"
+Write-Output "`n--- GET /readyz ---"
+Write-Output "Status: $($readyz.StatusCode)"
+Write-Output "Body: $($readyz.Body)"
+Write-Output "`n--- POST /chat without token ---"
+Write-Output "Status: $($withoutToken.StatusCode)"
+Write-Output "Body: $($withoutToken.Body)"
+Write-Output "`n--- POST /chat with token ---"
+Write-Output "Status: $($withToken.StatusCode)"
+Write-Output "Body: $($withToken.Body)"
+Write-Output "`n--- POST /chat rate limit (15 requests) ---"
+foreach ($item in $burst) {
+    Write-Output ("Attempt {0}: {1} {2}" -f $item.Attempt, $item.Result.StatusCode, $item.Result.Body)
+}
