@@ -16,7 +16,7 @@ Trong `Settings`, `api_token` không có giá trị mặc định nên app chế
 khởi động nếu thiếu biến môi trường. Hãy mô tả một tình huống cụ thể mà việc
 "chết sớm" này cứu bạn, so với việc để mặc định `"changeme"`.
 
-> *Câu trả lời của bạn*
+> Khi chạy test `test_thieu_api_token_thi_fail_fast`, việc bỏ `API_TOKEN` làm `Settings` ném `ValidationError` ngay lúc khởi tạo. Trong tình huống deploy lên Railway mà quên khai báo secret, lỗi sẽ xuất hiện ngay trong log build/startup thay vì để service khởi động với token mặc định như `changeme`. Nhờ vậy có thể sửa biến môi trường trước khi service nhận bất kỳ request nào và trước khi một token yếu hoặc công khai bị dùng để gọi API.
 
 ---
 
@@ -26,7 +26,7 @@ Chạy service và gọi `/chat` vài lần. Dán một dòng log JSON bạn thu
 nêu **hai** việc bạn làm được với dòng log đó mà `print("đã trả lời xong")`
 không làm được.
 
-> *Câu trả lời của bạn*
+> Sau khi gọi `emit("chat_completed", client_id="sv01", usd_cost=0.12)`, log có dạng một JSON object trên một dòng: `{"event":"chat_completed","severity":"INFO","ts":"...","client_id":"sv01","usd_cost":0.12}`. Từ cấu trúc này có thể lọc/đếm các event `chat_completed` theo `severity`, và tổng hợp chi phí theo `client_id` hoặc theo thời gian `ts`. Một `print("đã trả lời xong")` chỉ là chuỗi tự do nên không có trường dữ liệu ổn định để hệ thống logging lọc, truy vấn hay tạo cảnh báo.
 
 ---
 
