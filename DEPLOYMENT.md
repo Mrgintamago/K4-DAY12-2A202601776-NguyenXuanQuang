@@ -41,33 +41,35 @@ Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 
 Public URL: `https://chat-production-43e3.up.railway.app`
 
-```bash
+```powershell
 # 1. Liveness — mong đợi 200 {"status":"ok"}
-curl -i https://chat-production-43e3.up.railway.app/healthz
+Invoke-WebRequest -Uri "https://chat-production-43e3.up.railway.app/healthz" -Method Get
 
 # 2. Readiness — mong đợi 200 {"status":"ready"} (đã nối được Redis)
-curl -i https://chat-production-43e3.up.railway.app/readyz
+Invoke-WebRequest -Uri "https://chat-production-43e3.up.railway.app/readyz" -Method Get
 
 # 3. Không có token — mong đợi 401 kèm header WWW-Authenticate
-curl -i -X POST https://chat-production-43e3.up.railway.app/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message":"Hello"}'
+Invoke-WebRequest -Uri "https://chat-production-43e3.up.railway.app/chat" -Method Post `
+  -ContentType "application/json" -Body '{"message":"Hello"}'
 
 # 4. Có token — mong đợi 200 kèm câu trả lời
-curl -i -X POST https://chat-production-43e3.up.railway.app/chat \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $API_TOKEN" \
-  -H "X-Client-Id: sv-test" \
-  -d '{"message":"Deploy là gì?"}'
+$headers = @{
+  Authorization = "Bearer $env:API_TOKEN"
+  "X-Client-Id" = "sv-test"
+}
+Invoke-RestMethod -Uri "https://chat-production-43e3.up.railway.app/chat" -Method Post `
+  -Headers $headers -ContentType "application/json" -Body '{"message":"Deploy là gì?"}'
 
 # 5. Rate limit — gọi 15 lần, những lần cuối phải trả 429
-for i in $(seq 1 15); do
-  curl -s -o /dev/null -w "%{http_code} " -X POST https://chat-production-43e3.up.railway.app/chat \
-    -H "Content-Type: application/json" \
-    -H "Authorization: Bearer $API_TOKEN" \
-    -H "X-Client-Id: sv-test" \
-    -d '{"message":"test"}'
-done; echo
+$body = '{"message":"test"}'
+1..15 | ForEach-Object {
+  try {
+    (Invoke-WebRequest -Uri "https://chat-production-43e3.up.railway.app/chat" -Method Post `
+      -Headers $headers -ContentType "application/json" -Body $body).StatusCode
+  } catch {
+    $_.Exception.Response.StatusCode.value__
+  }
+}
 ```
 
 ## Kết Quả Chạy Thật
