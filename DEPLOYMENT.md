@@ -57,15 +57,17 @@ $headers = @{
   Authorization = "Bearer $env:API_TOKEN"
   "X-Client-Id" = "sv-test"
 }
+$payload = @{ message = "Deploy là gì?" } | ConvertTo-Json -Compress
+$requestBody = [System.Text.Encoding]::UTF8.GetBytes($payload)
 Invoke-RestMethod -Uri "https://chat-production-43e3.up.railway.app/chat" -Method Post `
-  -Headers $headers -ContentType "application/json" -Body '{"message":"Deploy là gì?"}'
+  -Headers $headers -ContentType "application/json; charset=utf-8" -Body $requestBody
 
 # 5. Rate limit — gọi 15 lần, những lần cuối phải trả 429
-$body = '{"message":"test"}'
+$rateBody = [System.Text.Encoding]::UTF8.GetBytes((@{ message = "test" } | ConvertTo-Json -Compress))
 1..15 | ForEach-Object {
   try {
     (Invoke-WebRequest -Uri "https://chat-production-43e3.up.railway.app/chat" -Method Post `
-      -Headers $headers -ContentType "application/json" -Body $body).StatusCode
+      -Headers $headers -ContentType "application/json; charset=utf-8" -Body $rateBody).StatusCode
   } catch {
     $_.Exception.Response.StatusCode.value__
   }
