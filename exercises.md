@@ -42,12 +42,12 @@ docker images | grep chat
 
 | Bản | Dung lượng |
 |-----|-----------|
-| 1 stage (bản đầu) | ... MB |
-| Multi-stage | ... MB |
+| 1 stage (bản đầu) | 1.73 GB |
+| Multi-stage | 270 MB |
 
 Giải thích: phần dung lượng chênh lệch đó là những gì?
 
-> *Câu trả lời của bạn*
+> Image multi-stage nhỏ hơn khoảng 1.46 GB. Bản một stage giữ nguyên base image Python đầy đủ và toàn bộ môi trường dùng để cài/build dependency trong runtime image. Bản multi-stage dùng `python:3.11-slim`, cài dependency ở stage builder với `--prefix=/install`, rồi runtime chỉ copy package đã cài cùng `app/` và `utils/`; vì vậy không mang theo các phần build context và layer không cần thiết để phục vụ app.
 
 ---
 
@@ -57,7 +57,7 @@ Sửa một ký tự trong `app/main.py` rồi build lại. Với Dockerfile c�
 layer nào được dùng lại từ cache, layer nào phải chạy lại? Nếu bạn đặt
 `COPY . .` lên trước `RUN pip install` thì kết quả khác thế nào?
 
-> *Câu trả lời của bạn*
+> Tôi build lại sau khi chỉ thêm một comment tạm vào `app/main.py`. Docker báo `CACHED` cho `COPY requirements.txt .` và `RUN pip install --no-cache-dir --prefix=/install -r requirements.txt`; các layer runtime trước khi copy source cũng được cache. `COPY --chown=appuser:appuser app ./app` và `COPY ... utils ./utils` chạy lại vì build context source đã đổi. Nếu đặt `COPY . .` trước `RUN pip install`, thay đổi một ký tự trong source sẽ làm layer copy toàn bộ source đổi trước, khiến layer cài dependency mất cache và phải chạy lại. Tôi đã xóa comment thử nghiệm sau khi kiểm tra.
 
 ---
 
@@ -77,7 +77,7 @@ Vì sao 401 phải kèm header `WWW-Authenticate: Bearer`? Và vì sao ta trả 
 một** thông báo lỗi cho cả ba trường hợp (thiếu header, sai scheme, sai token)
 thay vì nói rõ sai ở đâu cho người dùng dễ sửa?
 
-> *Câu trả lời của bạn*
+> HTTP 401 cần `WWW-Authenticate: Bearer` để client biết server yêu cầu cơ chế xác thực Bearer theo chuẩn HTTP, thay vì phải đoán cách gửi credential. Service trả cùng một thông báo `invalid or missing bearer token` cho thiếu header, sai scheme và sai token để không tiết lộ cho người đang dò token rằng họ đã vượt qua được bước nào. CP3 đã kiểm tra cả các trường hợp này, đồng thời dùng `secrets.compare_digest` để tránh rò rỉ timing khi so sánh token.
 
 ---
 
@@ -87,7 +87,7 @@ Với `capacity=10`, `refill_per_minute=10`: một client im lặng 10 phút r�
 liên tiếp. Nó gửi được bao nhiêu request trước khi bị 429? Nếu bỏ đoạn
 `min(capacity, ...)` trong `available()` thì con số đó thành bao nhiêu, và tại sao?
 
-> *Câu trả lời của bạn*
+> Với `capacity=10`, client chỉ gửi được tối đa 10 request liên tiếp trước khi nhận 429, dù đã im lặng 10 phút. Tốc độ nạp là 10 token/phút, nhưng `min(capacity, ...)` chặn số token ở 10. Nếu bỏ `min`, sau 10 phút bucket có thể tích thêm 100 token (hoặc 110 nếu trước đó đã đầy), tạo burst rất lớn và làm rate limit gần như mất tác dụng. CP3 đã kiểm tra cả refill và giới hạn capacity.
 
 ---
 
@@ -97,7 +97,7 @@ So sánh hạn mức $30/tháng với hạn mức $1/ngày cho cùng một clien
 cố khiến một client gọi liên tục từ 2h sáng. Với mỗi cách, thiệt hại tối đa là
 bao nhiêu và service tự hồi phục khi nào?
 
-> *Câu trả lời của bạn*
+> Hạn mức $30/tháng cho phép một sự cố hoặc client bị lộ token tiêu hết tối đa $30 trước khi reset vào tháng sau. Hạn mức $1/ngày giới hạn thiệt hại của một ngày xuống $1, sau đó service tự phục hồi khi key chi phí chuyển sang ngày UTC mới. Vì vậy daily budget phát hiện và chặn thiệt hại sớm hơn, còn monthly budget phù hợp hơn cho kiểm soát tổng chi tiêu dài hạn nhưng phản ứng chậm trước burst lúc 2 giờ sáng.
 
 ---
 

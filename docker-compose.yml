@@ -39,5 +39,25 @@ services:
   #   build: .
   #   ...
 
+  chat:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      API_TOKEN: ${API_TOKEN}
+      REDIS_URL: redis://redis:6379/0
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      AI_BOX_BASE_URL: ${AI_BOX_BASE_URL:-https://api.ai-box.vn/v1}
+      AI_BOX_API_KEY: ${AI_BOX_API_KEY:-}
+      AI_BOX_MODEL: ${AI_BOX_MODEL:-deepseek-v4-pro}
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz').read()\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 volumes:
   redis-data:

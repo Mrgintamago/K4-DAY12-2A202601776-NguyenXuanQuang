@@ -12,6 +12,11 @@ Dùng:
 from __future__ import annotations
 
 import hashlib
+import json
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+from app.config import get_settings
 
 # Giá giả lập, tính theo 1.000 token (giống thang giá gpt-4o-mini)
 PRICE_PROMPT_PER_1K = 0.00015
@@ -34,7 +39,7 @@ def _estimate_tokens(text: str) -> int:
     return max(1, len(text) // 4)
 
 
-def generate_reply(message: str, history: list[dict] | None = None) -> dict:
+def _generate_mock_reply(message: str, history: list[dict] | None = None) -> dict:
     """Giả lập một lượt gọi LLM.
 
     Args:
@@ -66,3 +71,63 @@ def generate_reply(message: str, history: list[dict] | None = None) -> dict:
         "completion_tokens": completion_tokens,
         "usd_cost": round(cost, 8),
     }
+
+
+def _generate_ai_box_reply(message: str, history: list[dict] | None = None) -> dict:
+    """Gọi API OpenAI-compatible của AI Box khi được bật bằng environment."""
+    settings = get_settings()
+    if not settings.ai_box_api_key:
+        raise RuntimeError("AI_BOX_API_KEY is required when LLM_PROVIDER=ai_box")
+
+    messages = list(history or [])
+    messages.append({"role": "user", "content": message})
+    payload = json.dumps(
+        {"model": settings.ai_box_model, "messages": messages},
+        ensure_ascii=False,
+    ).encode("utf-8")
+    request = Request(
+        f"{settings.ai_box_base_url.rstrip('/')}/chat/completions",
+        data=payload,
+        headers={
+            "Authorization": f"Bearer {settings.ai_box_api_key}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+
+    try:
+        with urlopen(request, timeout=settings.llm_timeout_seconds) as response:
+            body = json.load(response)
+    except HTTPError as error:
+        raise RuntimeError(f"AI Box request failed with HTTP {error.code}") from error
+    except URLError as error:
+        raise RuntimeError("AI Box request could not be completed") from error
+
+    try:
+        text = body["choices"][0]["message"]["content"]
+    except (IndexError, KeyError, TypeError) as error:
+        raise RuntimeError("AI Box returned an unexpected response format") from error
+
+    usage = body.get("usage", {})
+    prompt_tokens = int(usage.get("prompt_tokens", _estimate_tokens(message)))
+    completion_tokens = int(usage.get("completion_tokens", _estimate_tokens(text)))
+    cost = (
+        prompt_tokens / 1000 * settings.llm_prompt_price_per_1k
+        + completion_tokens / 1000 * settings.llm_completion_price_per_1k
+    )
+    return {
+        "text": text,
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "usd_cost": round(cost, 8),
+    }
+
+
+def generate_reply(message: str, history: list[dict] | None = None) -> dict:
+    """Tạo phản hồi bằng mock mặc định hoặc DeepSeek qua AI Box khi được bật."""
+    provider = get_settings().llm_provider.lower()
+    if provider == "mock":
+        return _generate_mock_reply(message, history)
+    if provider == "ai_box":
+        return _generate_ai_box_reply(message, history)
+    raise RuntimeError(f"Unsupported LLM_PROVIDER: {provider}")

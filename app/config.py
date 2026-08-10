@@ -51,6 +51,13 @@ class Settings(BaseSettings):
     refill_per_minute: int = 10
     daily_budget_usd: float = 1.0
     log_level: str = "INFO"
+    llm_provider: str = "mock"
+    ai_box_base_url: str = "https://api.ai-box.vn/v1"
+    ai_box_api_key: str | None = None
+    ai_box_model: str = "deepseek-v4-pro"
+    llm_timeout_seconds: float = 30.0
+    llm_prompt_price_per_1k: float = 0.00015
+    llm_completion_price_per_1k: float = 0.00060
 
 
 @lru_cache(maxsize=1)
