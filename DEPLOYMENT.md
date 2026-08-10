@@ -1,6 +1,6 @@
 # Thông Tin Deploy — Checkpoint 5
 
-> Điền file này sau khi deploy xong. `pytest tests/test_cp5.py` đọc file này
+> Điền file này sau khi deploy xong. `python -m pytest tests/test_cp5.py` đọc file này
 > để tìm địa chỉ service của bạn và gọi thử.
 >
 > **Chỉ ghi TÊN biến môi trường, tuyệt đối không dán giá trị token vào đây.**
@@ -89,5 +89,5 @@ rate limit burst 15 request: 200 200 200 200 200 200 200 200 200 200 429 429 429
 Đặt ảnh trong thư mục `screenshots/`:
 
 - `screenshots/dashboard.png` — trang quản lý service trên platform
-- `screenshots/healthz.png` — kết quả gọi `/healthz` từ trình duyệt hoặc curl
+- `screenshots/healthz.png` — kết quả gọi `/healthz` từ trình duyệt hoặc PowerShell
 
