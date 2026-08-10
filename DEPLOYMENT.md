@@ -53,6 +53,9 @@ Invoke-WebRequest -Uri "https://chat-production-43e3.up.railway.app/chat" -Metho
   -ContentType "application/json" -Body '{"message":"Hello"}'
 
 # 4. Có token — mong đợi 200 kèm câu trả lời
+if ([string]::IsNullOrWhiteSpace($env:API_TOKEN)) {
+  throw "Thiếu API_TOKEN trong PowerShell. Hãy đặt đúng token của service chat trên Railway."
+}
 $headers = @{
   Authorization = "Bearer $env:API_TOKEN"
   "X-Client-Id" = "sv-test"
