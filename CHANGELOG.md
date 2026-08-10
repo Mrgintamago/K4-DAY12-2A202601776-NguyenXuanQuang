@@ -38,6 +38,15 @@ Ghi lại thay đổi theo checkpoint để review trước khi commit. Không g
 - Cài graceful draining cho SIGTERM/SIGINT, giữ và gọi lại handler trước đó của Uvicorn.
 - Xác minh: `LLM_PROVIDER=mock` cùng `tests/test_cp4.py` có 19/19 test pass.
 
+### CP5 — Deploy Railway
+
+- Tạo project `day12-chat`, Redis service và service `chat` trên Railway.
+- Đặt biến runtime trên dashboard; dùng `LLM_PROVIDER=mock` để smoke test không gọi API ngoài.
+- Sửa `railway.toml` để expand `$PORT` qua `sh -c`; deployment lần hai thành công.
+- Public URL: `https://chat-production-43e3.up.railway.app`.
+- Smoke test: `/healthz` 200, `/readyz` 200, `/chat` không token 401, có token 200; burst 15 request cho 5 lần 429 cuối.
+- Xác minh: `tests/test_cp5.py` có 9 passed, 4 skipped (fallback không áp dụng).
+
 ### CP1 — Config, Health & Logging
 
 **Trạng thái:** Hoàn tất — đã xác minh bằng checkpoint.

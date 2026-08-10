@@ -114,7 +114,8 @@ Mỗi dòng bên dưới là một task có đầu ra kiểm chứng được. K
 | CP2 — Docker/Compose | Done | `python -m pytest tests/test_cp2.py -v` → 16/16 passed, gồm build image và kiểm tra kích thước dưới 400 MB. |
 | CP3 — Bảo mật API & cost control | Done | CP3 có 29/29 passed; regression CP1–CP3 có 58/58 passed, gồm Docker build thật. |
 | CP4 — Scaling & reliability | Done | `LLM_PROVIDER=mock python -m pytest tests/test_cp4.py -v` → 19/19 passed; đã tạo commit checkpoint. |
-| CP5, reflection, CI/CD | To Do | Chưa bắt đầu. |
+| CP5 — Railway deployment | Done | Public URL hoạt động; CP5 có 9 passed, 4 skipped; đã ghi bằng chứng vào `DEPLOYMENT.md`. |
+| Reflection, CI/CD | To Do | Còn câu 5 và phần bonus CI/CD. |
 
 ## Sơ đồ nhanh để review
 
@@ -142,7 +143,7 @@ flowchart LR
     CP1 --> CP2[CP2<br/>Docker<br/>Done]
     CP2 --> CP3[CP3<br/>API Security<br/>Done]
     CP3 --> CP4[CP4<br/>Redis & Reliability<br/>Done]
-    CP4 --> CP5[CP5<br/>Railway Deploy<br/>To Do]
+    CP4 --> CP5[CP5<br/>Railway Deploy<br/>Done]
     CP5 --> F[Reflection + CI/CD]
 ```
 
@@ -175,7 +176,7 @@ gantt
 | CP2 — Secure Docker runtime | Docker multi-stage, non-root, healthcheck, Compose + Redis | `python -m pytest tests/test_cp2.py -v` | Done — 16/16 test pass, gồm build image và kiểm tra kích thước. |
 | CP3 — API security & cost control | Bearer auth, token bucket, daily budget, `/chat` orchestration | `python -m pytest tests/test_cp3.py -v` | Done — 29/29 test pass khi override tạm `LLM_PROVIDER=mock`; regression CP1–CP3 đạt 58/58. |
 | CP4 — Scaling & reliability | Redis conversation state, `/readyz`, graceful draining | `python -m pytest tests/test_cp4.py -v` | Done — 19/19 test pass khi override tạm `LLM_PROVIDER=mock`; đã tạo commit checkpoint. |
-| CP5 — Cloud deployment | Railway/Render, public smoke test, `DEPLOYMENT.md`, screenshots | `python -m pytest tests/test_cp5.py -v` | Blocked by CP1–CP4 — Railway config exists but app is not deployable yet. |
+| CP5 — Cloud deployment | Railway/Render, public smoke test, `DEPLOYMENT.md`, screenshots | `python -m pytest tests/test_cp5.py -v` | Done — Railway public smoke test 9 passed, 4 skipped; deployment evidence đã ghi lại. |
 | Reflection | Hoàn tất 10 câu trả lời cá nhân trong `exercises.md` | `python grade.py --no-bonus` | To Do |
 | Bonus — CI/CD | GitHub Actions: test, Docker build, gated deploy, README badge | `python -m pytest tests/test_bonus_cicd.py -v` | To Do |
 

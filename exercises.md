@@ -116,4 +116,4 @@ Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health 
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
 tìm ra nguyên nhân bằng cách nào, và sửa ra sao?
 
-> *Câu trả lời của bạn*
+> Lần deploy đầu tiên bị Railway đánh dấu `FAILED`. Log ghi `Invalid value for '--port': '$PORT' is not a valid integer`. Nguyên nhân là `railway.toml` truyền `uvicorn ... --port $PORT` trực tiếp, nên Uvicorn nhận chuỗi literal thay vì biến môi trường đã được shell thay thế. Tôi sửa `startCommand` thành `sh -c 'uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}'`, deploy lại thành công và xác nhận `/healthz` 200, `/readyz` 200.
