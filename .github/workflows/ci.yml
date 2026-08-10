@@ -58,7 +58,7 @@ jobs:
           railway up --service chat --environment production --ci --detach --message "CI deploy $GITHUB_SHA"
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
+          RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID || 'e3f4ada2-af0d-41b7-b75b-b0b0a04fe884' }}
       - name: Smoke test
         run: |
           for attempt in {1..12}; do
