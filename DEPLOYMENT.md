@@ -41,6 +41,12 @@ Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 
 Public URL: `https://chat-production-43e3.up.railway.app`
 
+Chạy toàn bộ smoke test PowerShell bằng một lệnh (script tự đọc `API_TOKEN` từ `.env`):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\smoke-test.ps1
+```
+
 ```powershell
 # 1. Liveness — mong đợi 200 {"status":"ok"}
 Invoke-WebRequest -Uri "https://chat-production-43e3.up.railway.app/healthz" -Method Get
