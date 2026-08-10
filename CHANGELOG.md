@@ -55,6 +55,12 @@ Ghi lại thay đổi theo checkpoint để review trước khi commit. Không g
 - Thêm CI badge vào `README.md`; cần khai báo `RAILWAY_TOKEN` (Secret), `RAILWAY_PROJECT_ID` và `PUBLIC_URL` (Variables) trên GitHub.
 - Xác minh local: 11/11 kiểm tra cấu trúc bonus pass; badge cần workflow chạy thật trên GitHub.
 
+### Reflection — exercises
+
+- Hoàn tất câu 5 về rủi ro chạy container bằng root.
+- Hoàn tất câu 10 bằng lỗi deploy thực tế `$PORT` và cách sửa trong `railway.toml`.
+- Xác minh: `python grade.py --no-bonus` đạt 100/100 (CP1–CP5 xanh, exercises 11/11).
+
 ### CP1 — Config, Health & Logging
 
 **Trạng thái:** Hoàn tất — đã xác minh bằng checkpoint.

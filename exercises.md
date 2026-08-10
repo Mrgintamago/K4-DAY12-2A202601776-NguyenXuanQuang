@@ -3,7 +3,7 @@
 > **Bài làm cá nhân.** Trả lời bằng lời của chính bạn, dựa trên những gì bạn
 > quan sát được khi chạy code — không sao chép đáp án của người khác.
 >
-> Cách trả lời: thay dòng `> *Câu trả lời của bạn*` bằng câu trả lời.
+> Cách trả lời: thay dòng placeholder bên dưới mỗi câu bằng câu trả lời.
 > `grade.py` đếm số câu đã trả lời (15 điểm cho 10 câu).
 >
 > Họ và tên: ..........................  Mã học viên: ..........................
@@ -67,7 +67,7 @@ Container mặc định chạy bằng root. Mô tả chuỗi sự kiện dẫn t
 trong code Python của bạn" tới "kẻ tấn công có quyền cao trên máy host", và
 lệnh `USER` cắt đứt chuỗi đó ở chỗ nào.
 
-> *Câu trả lời của bạn*
+> Nếu ứng dụng Python có lỗ hổng (ví dụ đọc dữ liệu người dùng thành lệnh), kẻ tấn công có thể thực thi mã bên trong container. Nếu container chạy bằng root, mã đó có quyền cao nhất trong container, có thể đọc secret, sửa file hệ thống và khai thác thêm lỗ hổng runtime hoặc Docker để tìm đường tác động lên host. Chỉ thị `USER appuser` chuyển tiến trình sang user không đặc quyền, nên ngay cả khi bị thực thi mã, quyền truy cập cũng bị giới hạn; đây là một lớp phòng thủ giảm tác động, không thay thế việc vá lỗ hổng.
 
 ---
 

@@ -115,7 +115,7 @@ Mỗi dòng bên dưới là một task có đầu ra kiểm chứng được. K
 | CP3 — Bảo mật API & cost control | Done | CP3 có 29/29 passed; regression CP1–CP3 có 58/58 passed, gồm Docker build thật. |
 | CP4 — Scaling & reliability | Done | `LLM_PROVIDER=mock python -m pytest tests/test_cp4.py -v` → 19/19 passed; đã tạo commit checkpoint. |
 | CP5 — Railway deployment | Done | Public URL hoạt động; CP5 có 9 passed, 4 skipped; đã ghi bằng chứng vào `DEPLOYMENT.md`. |
-| Reflection, CI/CD | In Review | Bonus workflow đã viết; cần push lên GitHub và khai báo `RAILWAY_TOKEN`, `RAILWAY_PROJECT_ID`, `PUBLIC_URL` để chạy deploy job thật. |
+| Reflection, CI/CD | In Review | Reflection đã đủ 11/11 câu; bonus workflow cần push lên GitHub và khai báo `RAILWAY_TOKEN`, `RAILWAY_PROJECT_ID`, `PUBLIC_URL` để chạy deploy job thật. |
 
 ## Sơ đồ nhanh để review
 
@@ -177,7 +177,7 @@ gantt
 | CP3 — API security & cost control | Bearer auth, token bucket, daily budget, `/chat` orchestration | `python -m pytest tests/test_cp3.py -v` | Done — 29/29 test pass khi override tạm `LLM_PROVIDER=mock`; regression CP1–CP3 đạt 58/58. |
 | CP4 — Scaling & reliability | Redis conversation state, `/readyz`, graceful draining | `python -m pytest tests/test_cp4.py -v` | Done — 19/19 test pass khi override tạm `LLM_PROVIDER=mock`; đã tạo commit checkpoint. |
 | CP5 — Cloud deployment | Railway/Render, public smoke test, `DEPLOYMENT.md`, screenshots | `python -m pytest tests/test_cp5.py -v` | Done — Railway public smoke test 9 passed, 4 skipped; deployment evidence đã ghi lại. |
-| Reflection | Hoàn tất 10 câu trả lời cá nhân trong `exercises.md` | `python grade.py --no-bonus` | To Do |
+| Reflection | Hoàn tất 10 câu trả lời cá nhân trong `exercises.md` | `python grade.py --no-bonus` | Done — 11/11 câu được điền; tổng bắt buộc 100/100. |
 | Bonus — CI/CD | GitHub Actions: test, Docker build, gated deploy, README badge | `python -m pytest tests/test_bonus_cicd.py -v` | In Review — 11/11 kiểm tra cấu trúc pass; 2 kiểm tra badge chờ workflow chạy trên GitHub. |
 
 **Quy tắc chuyển checkpoint:** chỉ chuyển sang `In Review` khi lệnh xác nhận của checkpoint xanh; sau đó tạo commit độc lập theo checkpoint trước khi đánh dấu `Done`.
