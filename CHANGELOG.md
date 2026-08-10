@@ -30,6 +30,14 @@ Ghi lại thay đổi theo checkpoint để review trước khi commit. Không g
 - Xác minh: chạy `LLM_PROVIDER=mock` tạm thời khi test để không gọi AI Box; `tests/test_cp3.py` có 29/29 test pass.
 - Regression: CP1–CP3 chạy cùng Docker build thật có 58/58 test pass.
 
+### CP4 — Mở rộng và độ tin cậy
+
+- Chuyển lịch sử hội thoại sang Redis List theo từng client, giữ tối đa 12 message mới nhất và đặt TTL ba ngày.
+- Thêm `ping()` an toàn, không để lỗi Redis thoát thành lỗi HTTP 500.
+- Hoàn thiện `/readyz` để phản ánh Redis và trạng thái draining.
+- Cài graceful draining cho SIGTERM/SIGINT, giữ và gọi lại handler trước đó của Uvicorn.
+- Xác minh: `LLM_PROVIDER=mock` cùng `tests/test_cp4.py` có 19/19 test pass.
+
 ### CP1 — Config, Health & Logging
 
 **Trạng thái:** Hoàn tất — đã xác minh bằng checkpoint.

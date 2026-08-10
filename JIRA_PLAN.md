@@ -113,7 +113,38 @@ Mỗi dòng bên dưới là một task có đầu ra kiểm chứng được. K
 | Cấu hình AI Box / DeepSeek | Done (tùy chọn) | Provider mặc định là `mock`; chỉ bật AI Box bằng `LLM_PROVIDER=ai_box` cùng `AI_BOX_API_KEY` trong `.env`/Railway Variables. Chưa gọi API thật vì chưa có key. |
 | CP2 — Docker/Compose | Done | `python -m pytest tests/test_cp2.py -v` → 16/16 passed, gồm build image và kiểm tra kích thước dưới 400 MB. |
 | CP3 — Bảo mật API & cost control | Done | CP3 có 29/29 passed; regression CP1–CP3 có 58/58 passed, gồm Docker build thật. |
-| CP4–CP5, reflection, CI/CD | To Do | Chưa bắt đầu. |
+| CP4 — Scaling & reliability | Done | `LLM_PROVIDER=mock python -m pytest tests/test_cp4.py -v` → 19/19 passed; đã tạo commit checkpoint. |
+| CP5, reflection, CI/CD | To Do | Chưa bắt đầu. |
+
+## Sơ đồ nhanh để review
+
+### Luồng một request `/chat`
+
+```mermaid
+flowchart LR
+    A[Client] --> B{Bearer token hợp lệ?}
+    B -- Không --> E1[401 Unauthorized]
+    B -- Có --> C{Còn quota rate limit?}
+    C -- Không --> E2[429 Too Many Requests]
+    C -- Có --> D{Còn ngân sách ngày?}
+    D -- Không --> E3[402 Payment Required]
+    D -- Có --> H[Đọc history từ Redis]
+    H --> L[LLM: Mock hoặc AI Box]
+    L --> S[Lưu history và chi phí vào Redis]
+    S --> O[JSON log + 200 response]
+```
+
+### Đường đi checkpoint
+
+```mermaid
+flowchart LR
+    CP0[CP0<br/>Baseline<br/>Done] --> CP1[CP1<br/>Config & Health<br/>Done]
+    CP1 --> CP2[CP2<br/>Docker<br/>Done]
+    CP2 --> CP3[CP3<br/>API Security<br/>Done]
+    CP3 --> CP4[CP4<br/>Redis & Reliability<br/>Done]
+    CP4 --> CP5[CP5<br/>Railway Deploy<br/>To Do]
+    CP5 --> F[Reflection + CI/CD]
+```
 
 ## Kế hoạch thực thi theo checkpoint
 
@@ -143,7 +174,7 @@ gantt
 | CP1 — Config, health & logging | `Settings`, JSON stdout logging, `GET /healthz` | `python -m pytest tests/test_cp1.py -v` | Done — 13/13 test pass; đã tạo commit checkpoint. |
 | CP2 — Secure Docker runtime | Docker multi-stage, non-root, healthcheck, Compose + Redis | `python -m pytest tests/test_cp2.py -v` | Done — 16/16 test pass, gồm build image và kiểm tra kích thước. |
 | CP3 — API security & cost control | Bearer auth, token bucket, daily budget, `/chat` orchestration | `python -m pytest tests/test_cp3.py -v` | Done — 29/29 test pass khi override tạm `LLM_PROVIDER=mock`; regression CP1–CP3 đạt 58/58. |
-| CP4 — Scaling & reliability | Redis conversation state, `/readyz`, graceful draining | `python -m pytest tests/test_cp4.py -v` | To Do |
+| CP4 — Scaling & reliability | Redis conversation state, `/readyz`, graceful draining | `python -m pytest tests/test_cp4.py -v` | Done — 19/19 test pass khi override tạm `LLM_PROVIDER=mock`; đã tạo commit checkpoint. |
 | CP5 — Cloud deployment | Railway/Render, public smoke test, `DEPLOYMENT.md`, screenshots | `python -m pytest tests/test_cp5.py -v` | Blocked by CP1–CP4 — Railway config exists but app is not deployable yet. |
 | Reflection | Hoàn tất 10 câu trả lời cá nhân trong `exercises.md` | `python grade.py --no-bonus` | To Do |
 | Bonus — CI/CD | GitHub Actions: test, Docker build, gated deploy, README badge | `python -m pytest tests/test_bonus_cicd.py -v` | To Do |

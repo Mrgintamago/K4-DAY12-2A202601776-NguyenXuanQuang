@@ -106,7 +106,7 @@ bao nhiêu và service tự hồi phục khi nào?
 Nếu gộp hai endpoint làm một và cho nó kiểm tra Redis, chuyện gì xảy ra với cụm
 3 container khi Redis mất kết nối 30 giây? Trả lời theo đúng thứ tự sự kiện.
 
-> *Câu trả lời của bạn*
+> Nếu gộp hai endpoint và cho liveness check Redis, Redis mất kết nối 30 giây sẽ làm cả ba container trả unhealthy. Orchestrator lần lượt restart cả ba instance thay vì chỉ để load balancer rút traffic; trong lúc Redis hồi phục, không còn instance nào phục vụ request và người dùng nhận lỗi. Khi tách probe, `/healthz` vẫn 200 vì process còn sống, còn `/readyz` trả 503; load balancer chỉ ngừng gửi request mới tới các instance chưa ready mà không restart đồng loạt.
 
 ---
 
