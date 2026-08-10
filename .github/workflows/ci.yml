@@ -52,7 +52,10 @@ jobs:
       - name: Install Railway CLI
         run: npm install --global @railway/cli
       - name: Deploy service
-        run: railway up --service chat --project "$RAILWAY_PROJECT_ID" --environment production --ci --detach --message "CI deploy $GITHUB_SHA"
+        run: |
+          test -n "$RAILWAY_PROJECT_ID" || { echo "Thiếu GitHub Variable RAILWAY_PROJECT_ID"; exit 1; }
+          railway link --project "$RAILWAY_PROJECT_ID" --service chat --environment production
+          railway up --service chat --environment production --ci --detach --message "CI deploy $GITHUB_SHA"
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_PROJECT_ID: ${{ vars.RAILWAY_PROJECT_ID }}
