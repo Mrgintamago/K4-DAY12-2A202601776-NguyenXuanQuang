@@ -86,7 +86,7 @@ healthz: 200 {"status":"ok"}
 readyz: 200 {"status":"ready","redis":true}
 chat không token: 401 Unauthorized
 chat có token: 200 (reply trả về bình thường)
-rate limit burst 15 request: 200 200 200 200 200 200 200 200 200 200 429 429 429 429 429
+rate limit burst 15 request: 200 200 200 200 200 200 200 200 200 429 429 429 429 429 429
 ```
 
 ## Ảnh Chụp Màn Hình
